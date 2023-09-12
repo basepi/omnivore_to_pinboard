@@ -30,9 +30,12 @@ def omnivore_to_pinboard(event: dict, context: Any) -> None:
         print(f"Article fetching failed, errorcodes: {article.get('errorCodes')}")
         return
     article = article.get("article", {})
-    print(f"Fetched article: {article['title']} {article['url']}")
+    print(f"Fetched article: {article['title']} {article.get('url')}")
     if not article.get("isArchived"):
         print("Fetched article is not archived, skipping")
+        return
+    if not article.get("url"):
+        print("Fetched article has no URL, skipping")
         return
     labels = [label["name"] for label in article.get("labels", [])]
     print(f"Parsed labels: {labels}")
