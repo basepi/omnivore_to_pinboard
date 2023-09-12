@@ -37,16 +37,16 @@ def omnivore_to_pinboard(event: dict, context: Any) -> None:
         )
         return
     article = article.get("article", {})
-    print(f"Fetched article: {article['title']} {article.get('url')}")
+    print(f"Fetched article: {article['title']} {article['url']}")
     if not article.get("isArchived"):
         print("Fetched article is not archived, skipping")
         return
-    labels = [label["name"] for label in article.get("labels", [])]
+    labels = [label["name"] for label in article.get("labels") or []]
     print(f"Parsed labels: {labels}")
     if "000noarchive" in labels:
         print("Fetched article has noarchive label, skipping")
         return
-    if not article.get("url"):
+    if article["url"].startswith("https://omnivore.app/no_url?"):
         send_email_notification(
             "Fetched article has no URL + missing noarchive label, skipping", article
         )
@@ -78,9 +78,10 @@ def omnivore_to_pinboard(event: dict, context: Any) -> None:
 
 
 def send_email_notification(error: str, article: dict) -> None:
-    print(error)
+    print(f"E-mail notification: {error}")
     if not NOTIFICATION_EMAIL:
         return
+    article.pop("content", None)
     ses.send_email(
         Destination={
             "ToAddresses": [
